@@ -2,8 +2,21 @@ pico-8 cartridge // http://www.pico-8.com
 version 29
 __lua__
 function _init()
-x=56
-y=104
+	p1={
+	sp=1,
+	x=56,
+	y=104,
+	w=16,
+	h=16,
+}
+	p2={
+	sp=4,
+	x=56,
+	y=104,
+	w=16,
+	h=16,
+}	
+
 end
 
 function _update()
@@ -20,21 +33,25 @@ end
 --spawn+move
 
 function spawn()
-spr(1,x-30,y,2,2)
-spr(4,x+30,y,2,2)
+spr(p1.sp,p1.x,p1.y,2,2)
+spr(p2.sp,p2.x,p2.y,2,2)
 end
 
 function move()
-	if (btn(➡️)) x+=1
-	if (btn(⬅️)) x-=1
+	if (btn(➡️,0)) p1.x+=1
+	if (btn(⬅️,0)) p1.x-=1
 //	if (btn(⬇️))
-	if (btnp(⬆️)) jump()
-	if (y<104) y+=4
+//	if (btnp(⬆️)) jump()
+//	if (y<104) y+=4
+
+	if (btn(➡️,1)) p2.x+=1
+	if (btn(⬅️,1)) p2.x-=1
+
 end
 
-function jump()
- if (y==104) y-=16
-end
+//function jump()
+// if (y==104) y-=16
+//end
 __gfx__
 00000000000000000000000033333333000000000000000000008000555555550000000000000000000000000000000000000000000080000000000000008000
 00000000000080000000000033333333000000000000000000099000555555550000800000000000000080000000000000000000000990000000000000099000

@@ -3,6 +3,10 @@ version 29
 __lua__
 function _init()
 
+scene="menu"
+x=0
+y=31
+
 	p1={
 	sp=2,
 	sp_jump=6,
@@ -92,20 +96,56 @@ if fget(mget(p1.x/8,p1.y/8),2) then
 	end
 end
 -->8
---update and draw
+--update and draw, main menu
+
 function _update60()
-	player_update(p1)
-	player_update(p2)
-	next_room()
+ if scene=="menu" then
+    update_menu()
+ end
+
+ if scene=="game" then
+ update_game()
+ end
 end
 
 function _draw()
+
+  if scene=="menu" then
+    draw_menu()
+  end
+
+  if scene=="game" then
+	 draw_game()
+  end
+end
+
+function update_game()
+	player_update(p1)
+	player_update(p2)
+	next_room()
+end	
+
+function update_menu()
+   if btnp(❎) then
+   scene="game"
+   end
+end   
+
+function draw_game()
 	cls()
 	map(0,0)
 	camera(camx,camy)
 	player_animate(p1)
 	player_animate(p2)
 end
+
+function draw_menu()
+ cls()
+ map(48,0)
+ print ("romeo vs juliette", 30, 50,8)
+ print("press ❎ to start", 30, 90)
+end
+
 -->8
 --collisions
 

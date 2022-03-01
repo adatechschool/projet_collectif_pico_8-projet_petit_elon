@@ -9,68 +9,75 @@ scene="menu"
 x=0
 y=31
 
-	p1={
-	sp=2,
-	sp_jump=6,
-	sp_landed=2,
-	sp_atk=4,
-	sp_def=6,
-	sp_ko=8, 
-	x=originx-32,
-	y=100,
-	w=16,
-	h=16,
-	facing="right",
-	dx=0,
-	dy=0,
-	max_dx=2,
-	max_dy=3,
-	acc=0.2,
-	boost=4,
-	anim=0,
-	running=false,
-	jumping=false,
-	falling=false,
-	landed=false,
-	attacking=false,
-	defending=false,
-	ko=false,
-	attack_timer=0,
-	player_key=0,
+p1={}
+p2={}
+
+p1={
+sp=2,
+sp_jump=6,
+sp_landed=2,
+sp_atk=4,
+sp_def=6,
+sp_ko=8, 
+x=originx-32,
+y=100,
+w=16,
+h=16,
+facing="right",
+dx=0,
+dy=0,
+max_dx=2,
+max_dy=3,
+acc=0.2,
+boost=4,
+anim=0,
+running=false,
+jumping=false,
+falling=false,
+landed=false,
+can_atk=true,
+attacking=false,
+defending=false,
+ko=false,
+attack_timer=0,
+player_key=0,
+other_player=p2,
 }
-	p2={
-	sp=34,
-	sp_jump=38,
-	sp_landed=34,
-	sp_atk=36,
-	sp_def=38,
-	sp_ko=40,
-	x=originx+32,
-	y=100,
-	w=16,
-	h=16,
-	facing="left",
-	dx=0,
-	dy=0,
-	max_dx=2,
-	max_dy=3,
-	acc=0.2,
-	boost=4,
-	anim=0,
-	running=false,
-	jumping=false,
-	falling=false,
-	landed=false,
-	attacking=false,
-	defending=false,
-	ko=false,
-	attack_timer=0,
-	player_key=1,
+p2={
+sp=34,
+sp_jump=38,
+sp_landed=34,
+sp_atk=36,
+sp_def=38,
+sp_ko=40,
+x=originx+32,
+y=100,
+w=16,
+h=16,
+facing="left",
+dx=0,
+dy=0,
+max_dx=2,
+max_dy=3,
+acc=0.2,
+boost=4,
+anim=0,
+running=false,
+jumping=false,
+falling=false,
+landed=false,
+attacking=false,
+can_atk=true,
+defending=false,
+ko=false,
+attack_timer=0,
+player_key=1,
+other_player=p1,
 }
 
 players = {p1, p2}
 gravity=0.3
-friction=0.85
+friction=0.7
 
 end
 
@@ -137,9 +144,7 @@ function draw_game()
 	player_animate(p1)
 	player_animate(p2)
 	--debug
-	if debug_timer > time() then
-		print("touche", camx+8, 16, 7)
-	end
+	print(p2.x, camx+8, 16, 7)
 end
 
 function draw_menu()
@@ -213,12 +218,6 @@ function collide_map(obj,aim,flag)
 	
 end
 
-function check_attack(player)
-	-- left & right
-
-end
--->8
---player update
 function player_update(player)
 
 	--physics
@@ -244,14 +243,24 @@ function player_update(player)
 	end
 	
 	if btnp(❎,player.player_key)
-	 and player.attacking==false then
+	 and player.can_atk==true then
 		attack(player)
-	end	
+	end
+	
+	--alignement
+	players_alignement()
 
 	--attack
-	players_alignement()
+		--end of attack / reset can_atk	
 	if time()>player.attack_timer then
 		player.attacking=false
+		player.can_atk=true
+	end
+
+	if player.attacking and check_attack(player) then
+		if player.other_player.attacking then
+			resolve_double_attack()
+		end
 	end
 	
 
@@ -334,25 +343,41 @@ end
 
 function attack(player)
 	player.attacking=true
+	player.can_atk=false
 	player.attack_timer=time()+0.5
+end
+
+function check_attack(player)
 	-- check attack
 	-- end of flower must touch body part of other player
 	for p in all(players) do
 		if p != player then
 			if player.facing == 'right' then
-				if (((player.x + player.w >= p.x + p.w/2) and (player.x + player.w/2 <= p.x + p.w)) and (player.y+player.h/2 >= p.y and player.y+player.h/2 <= p.y+p.h)) then
-					debug_timer = time()+1.5
+				if (((player.x + player.w >= p.x + p.w/2) and (player.x + player.w/2 <= p.x + p.w)) and (player.y+player.h/2 >= p.y and player.y+player.h/2+2 <= p.y+p.h)) then
+					return true
 				end
 			elseif player.facing =='left' then
-				if ((player.x <= p.x+p.w) and (player.x + player.w/2 >= p.x + p.w/2) and  (player.y+player.h/2 >= p.y and player.y+player.h/2 <= p.y+p.h)) then
-					debug_timer = time()+1.5
+				if ((player.x <= p.x+p.w/2) and (player.x + player.w/2 >= p.x) and  (player.y+player.h/2 >= p.y and player.y+player.h/2+2 <= p.y+p.h)) then
+					return true
 				end
 			end
 
 		end
 	end
+	return false
 end
 
+function resolve_double_attack()
+	--triggered when both plaers attack and hit
+	p1.attacking, p2.attacking = false, false
+	if p1.facing == 'right' then
+		p1.dx -= 2
+		p2.dx += 2
+	else 
+		p1.dx += 2
+		p2.dx -= 2		
+	end
+end
 
 __gfx__
 00000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000000000000000
@@ -534,7 +559,7 @@ __map__
 0400000000020202000202000000000404000000000000000000000002020004040000000000000202000000000000043b000000000000000000002b2b2b003b04000000000000000000000000000004040000000000000000000000000000040400000000000000000000000202000400000000000000000000000000000000
 0400000000000000000000000000000404020200000000000000000000000004040000000000000000000000000202043b2b2b0000000000000000000000003b04020200000000000000000000000004040202000000000000000000000000040400000000000000000000000000000400000000000000000000000000000000
 0400000000000000000000000000000404000000000000000000000000000004040202000000000000000002000000043b00002b2b000000000000000000003b04000000000000000000000000000004040000000000000000000000000000040400000000000000000000000000000400000000000000000000000000000000
-0400020200000000000000000000000b0c00000000000002000000000000000b0c00000000000000000000000000000b0c000000000000002b0000000000000b0c00000000000000000000000000000b0c00000000000000000000000000000b0c00000000000000000000000000000400000000000000000000000000000000
-0400000000000000000000000000001b1c00000000000002000000000000001b1c00000000000002020000000000001b1c000000000000002b0000000000001b1c00000000000002000000000000001b1c00000000000000000000000000001b1c00000000000002000000000000000400000000000000000000000000000000
+0400020200000000000000000000000b0c00000000000002000000000000000b0c00000000000000000000000000000b0c00000000000000000000000000000b0c00000000000000000000000000000b0c00000000000000000000000000000b0c00000000000000000000000000000400000000000000000000000000000000
+0400000000000000000000000000001b1c00000000000002000000000000001b1c00000000000002020000000000001b1c00000000000000000000000000001b1c00000000000002000000000000001b1c00000000000000000000000000001b1c00000000000002000000000000000400000000000000000000000000000000
 2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b00000000000000000000000000000000
 00000000000000000000000000002b2b2b2b2b2b2b2b2b2b2b2b2b2b2b00002b2b2b2b2b2b2b2b2b2b00000000000000000000000000000000000000000000002b2b2b2b2b2b00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

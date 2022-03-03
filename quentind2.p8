@@ -261,8 +261,27 @@ function collide_map(obj,aim,flag)
 		return true
 	else
 		return false
+	end	
+end
+
+function collide_h_players()
+	if (abs((p1.x + p1.w/2) - (p2.x + p2.w/2)) <= 3) and (abs(p1.y-p2.y)<16) then
+		if p1.x < p2.x then
+			if p1.dx > 0 then
+				p1.dx=0
+			end
+			if p2.dx < 0 then
+				p2.dx = 0
+			end
+		elseif p2.x < p1.x then
+			if p1.dx < 0 then
+				p1.dx=0
+			end
+			if p2.dx > 0 then
+				p2.dx = 0
+			end
+		end
 	end
-	
 end
 -->8
 --player update
@@ -343,6 +362,7 @@ function player_update(player)
 	end
 
 	--players collision
+	collide_h_players()
 	
 
 	--check collision up and down
